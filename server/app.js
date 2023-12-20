@@ -1,16 +1,15 @@
 const express = require('express')
-const cors = require('cors')
+const path = require('path')
+const APILoader = require('./lib/APILoader')
 const app = express()
 
-app.use(express.json())
-app.use(express.urlencoded())
-app.use(cors())
+const apiLoader = new APILoader(app)
 
-app.get('/api/test', (req, res) => {
-	res.json({ message: 'This is the message from server!' })
-})
+apiLoader.useJson()
+apiLoader.useCors()
+
+const dir = path.join(__dirname, 'api')
+apiLoader.loadAPIs(dir)
 
 const port = 4000
-app.listen(port, () => {
-	console.log(`App is listening on port ${port}`)
-})
+apiLoader.listen(port)

@@ -1,0 +1,14 @@
+{
+	"themes": {
+		"lightTheme": {
+			"primaryColor": "#000000",
+			"secondaryColor": "#000000",
+			"textColor": "#000000"
+		},
+		"darkTheme": {
+			"primaryColor": "#000000",
+			"secondaryColor": "#000000",
+			"textColor": "#000000"
+		}
+	}
+}

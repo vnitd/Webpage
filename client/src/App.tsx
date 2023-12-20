@@ -1,5 +1,5 @@
 import React from 'react'
-import { getAPI } from './until/request'
+import { getAPI } from './utils/request'
 
 function App() {
 	const [msg, setMsg] = React.useState<string>()
