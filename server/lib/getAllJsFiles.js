@@ -1,18 +1,18 @@
-const fs = require('fs')
-const path = require('path')
+const fs = require('fs');
+const path = require('path');
 
 function getAllJsFiles(dir, fileList = []) {
-	const files = fs.readdirSync(dir)
+	const files = fs.readdirSync(dir);
 
 	files.forEach((file) => {
-		const filePath = path.join(dir, file)
+		const filePath = path.join(dir, file);
 		if (fs.statSync(filePath).isDirectory()) {
-			this.getAllJsFiles(filePath, fileList)
+			this.getAllJsFiles(filePath, fileList);
 		} else {
-			fileList.push(filePath)
+			fileList.push(filePath);
 		}
-	})
-	return fileList
+	});
+	return fileList;
 }
 
-module.exports = getAllJsFiles
+module.exports = getAllJsFiles;

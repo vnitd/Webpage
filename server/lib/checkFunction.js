@@ -1,11 +1,11 @@
-const API = require('./API')
+const API = require('./interface/API');
 
 function checkFunction(instance, functionName) {
-	var parent = new API()
-	var parentFunction = parent[functionName]
-	var childFunction = instance[functionName]
+	var parent = new API();
+	var parentFunction = parent[functionName];
+	var childFunction = instance[functionName];
 
-	return parentFunction !== childFunction
+	return parentFunction !== childFunction;
 }
 
-module.exports = checkFunction
+module.exports = checkFunction;

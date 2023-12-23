@@ -1,14 +1,13 @@
-const API = require('../lib/API')
+const API = require('../lib/interface/API');
 
 class TestAPI extends API {
 	constructor() {
-		super('/api/test')
+		super('/api/test');
 	}
 
 	onGet(req, res) {
-		res.json({ message: 'This is the message from server!' })
+		res.json({ message: 'This is the message from server!' });
 	}
-    
 }
 
-module.exports = TestAPI
+module.exports = TestAPI;
