@@ -36,8 +36,13 @@ async function main() {
 	apiLoader.loadAPIs(apiDir);
 
 	const test = new TestDAO();
-	await test.save(new Test(23, 'Thân Trọng An', 'SE17B05'));
-	await test.save(new Test(24, 'Trần Việt Đăng Quang', 'SE17B05'));
+	await test.all();
+
+	await test.getById({ id: 26 });
+	await test.getIdAndNameByNameAndClazz({
+		name: 'Trần Việt Đăng Quang',
+		clazz: 'SE17B04',
+	});
 
 	await db.disconnect();
 	// console.log(await test.all());

@@ -14,6 +14,7 @@ class DAO {
 		return this.#sqlParams;
 	}
 
+	getPool() {}
 	all() {}
 	save() {}
 	delete() {}

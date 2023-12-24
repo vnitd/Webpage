@@ -11,8 +11,12 @@ class TestDAO extends DAO {
 		});
 	}
 
-	getById;
-	getByName;
+	getById() {}
+	getIdAndNameAndClazzByNameAndClazz() {}
+	setClazzByName() {}
+	setClazzByIdAndName() {}
+	// deleteById; // default = delete
+	deleteByNameAndClass() {}
 }
 
 module.exports = TestDAO;
