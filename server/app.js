@@ -27,7 +27,7 @@ const dbDir = path.join(__dirname, 'db');
 async function main() {
 	apiLoader.useJson();
 	apiLoader.useCors();
-	const db = apiLoader.useDatabase(dbDir, dbConfig);
+	const db = apiLoader.useDatabase(dbDir, dbConfig, true);
 
 	await db.connect();
 	await db.load();
@@ -42,6 +42,8 @@ async function main() {
 		name: 'Trần Việt Đăng Quang',
 		clazz: 'SE17B04',
 	});
+
+	await test.save({ name: 'Trần Việt Đăng Quang', clazz: 'SE17B06' });
 
 	// await test.setNameAndClazzByName(
 	// 	{ name: 'Trần Việt Đăng Quang', clazz: 'SE17B04' },

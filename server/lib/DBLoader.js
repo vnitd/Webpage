@@ -7,6 +7,7 @@ class DBLoader {
 	#path;
 	#pool;
 	#isDebugMode;
+	#isShowCmd;
 	constructor(path, database) {
 		this.#path = path;
 		this.#pool = new sql.ConnectionPool(database);
@@ -14,6 +15,10 @@ class DBLoader {
 
 	setDebugMode(val) {
 		this.#isDebugMode = val;
+	}
+
+	setShowCommand(val) {
+		this.#isShowCmd = val;
 	}
 
 	async connect() {
@@ -115,6 +120,8 @@ class DBLoader {
 					sqlQuery,
 					this.#paramize(src, parameters),
 				);
+				if (this.#isShowCmd)
+					console.log('[QUERY] [COMMAND] ' + sqlQuery);
 				if (this.#isDebugMode)
 					console.log(
 						`[QUERY] Get ${sqlTar} by ${srcColumns.join(
@@ -173,6 +180,8 @@ class DBLoader {
 					this.#paramize({ ...data, ...source(src) }, parameters),
 					false,
 				);
+				if (this.#isShowCmd)
+					console.log('[QUERY] [COMMAND] ' + sqlQuery);
 				if (this.#isDebugMode)
 					console.log(
 						`[QUERY] Set ${tarColumns.join(
@@ -205,6 +214,7 @@ class DBLoader {
 				this.#paramize(src, parameters),
 				false,
 			);
+			if (this.#isShowCmd) console.log('[QUERY] [COMMAND] ' + sqlQuery);
 			if (this.#isDebugMode)
 				console.log(
 					`[QUERY] Deleted ${result} rows by ${srcColumns.join(
@@ -224,6 +234,7 @@ class DBLoader {
 				// console.log(sql);
 				const result = await this.#execute(sql);
 				// const aRes = [];
+				if (this.#isShowCmd) console.log('[QUERY] [COMMAND] ' + sql);
 				if (this.#isDebugMode)
 					console.log(
 						`[QUERY] Get all data on ${tableName}, result: `,
@@ -242,18 +253,19 @@ class DBLoader {
 			);
 			const variables = paramWithoutID.map((val) => '@' + val);
 			return async (data) => {
+				if (!data.id) data.id = 0;
 				const sqlQuery = `
-		MERGE INTO ${tableName} AS target
-		USING (VALUES (${variables.join(', ')})) AS source (${paramWithoutID.join(
+MERGE INTO ${tableName} AS target
+USING (VALUES (${variables.join(', ')})) AS source (${paramWithoutID.join(
 					', ',
 				)})
-		ON target.id = @id
-		WHEN MATCHED THEN
-			UPDATE SET ${paramWithoutID
-				.map((val) => `target.${val} = source.${val}`)
-				.join(', ')}
-		WHEN NOT MATCHED THEN
-			INSERT (${paramWithoutID.join(', ')}) VALUES (${variables.join(', ')});
+ON target.id = @id
+WHEN MATCHED THEN
+	UPDATE SET ${paramWithoutID
+		.map((val) => `target.${val} = source.${val}`)
+		.join(', ')}
+WHEN NOT MATCHED THEN
+	INSERT (${paramWithoutID.join(', ')}) VALUES (${variables.join(', ')});
 `;
 
 				const result = await this.#execute(
@@ -261,20 +273,21 @@ class DBLoader {
 					this.#paramize(data, parameters),
 					false,
 				);
+				if (this.#isShowCmd)
+					console.log('[QUERY] [COMMAND] ' + sqlQuery);
 				if (this.#isDebugMode)
 					console.log(`[QUERY] Saved ${result} rows to ${tableName}`);
 				return result;
 			};
 		} else if (functionName === 'delete') {
 			return async (id) => {
-				const sql = `
-		DELETE FROM ${tableName} WHERE id=@id
-`;
+				const sql = `DELETE FROM ${tableName} WHERE id=@id`;
 				const result = await this.#execute(
 					sql,
 					this.#paramize({ id }, parameters),
 					false,
 				);
+				if (this.#isShowCmd) console.log('[QUERY] [COMMAND] ' + sql);
 				if (this.#isDebugMode)
 					console.log(
 						`[QUERY] Deleted ${result} rows from ${tableName}`,

@@ -56,8 +56,9 @@ class APILoader {
 		API.app.use(cors());
 	}
 
-	useDatabase(path, dbconfig, debugMode = false) {
+	useDatabase(path, dbconfig, showCommand = false, debugMode = false) {
 		const dbLoader = new DBLoader(path, dbconfig);
+		dbLoader.setShowCommand(showCommand);
 		dbLoader.setDebugMode(debugMode);
 		return dbLoader;
 	}
