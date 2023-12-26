@@ -1,10 +1,9 @@
 const DAO = require('../lib/interface/DAO');
-const Test = require('../model/Test');
 const sql = require('mssql');
 
 class TestDAO extends DAO {
 	constructor() {
-		super(Test, {
+		super({
 			id: sql.Int,
 			name: sql.NVarChar(50),
 			clazz: sql.NVarChar(10),
@@ -13,7 +12,7 @@ class TestDAO extends DAO {
 
 	getById() {}
 	getIdAndNameAndClazzByNameAndClazz() {}
-	setClazzByName() {}
+	setNameAndClazzByName() {}
 	setClazzByIdAndName() {}
 	// deleteById; // default = delete
 	deleteByNameAndClass() {}

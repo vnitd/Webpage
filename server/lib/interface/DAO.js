@@ -1,13 +1,7 @@
 class DAO {
-	#object;
 	#sqlParams;
-	constructor(object, sqlParams) {
-		this.#object = object;
+	constructor(sqlParams) {
 		this.#sqlParams = sqlParams;
-	}
-
-	getObject() {
-		return this.#object;
 	}
 
 	getParams() {

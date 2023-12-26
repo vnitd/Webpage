@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const APILoader = require('./lib/APILoader');
 const TestDAO = require('./db/TestDAO');
-const Test = require('./model/Test');
 const app = express();
 
 const apiLoader = new APILoader(app);
@@ -39,10 +38,15 @@ async function main() {
 	await test.all();
 
 	await test.getById({ id: 26 });
-	await test.getIdAndNameByNameAndClazz({
+	await test.getIdAndNameAndClazzByNameAndClazz({
 		name: 'Trần Việt Đăng Quang',
 		clazz: 'SE17B04',
 	});
+
+	await test.setNameAndClazzByName(
+		{ name: 'Trần Việt Đăng Quangg', clazz: 'SE17B04' },
+		{ name: 'Trần Việt Đăng Quang' },
+	);
 
 	await db.disconnect();
 	// console.log(await test.all());

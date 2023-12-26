@@ -66,27 +66,28 @@ class DBLoader {
 		}
 	}
 
-	#convertToObject(json, object) {
-		const instance = new object();
-		for (const property of Object.getOwnPropertyNames(instance)) {
-			instance[property] = json[property];
-		}
-		return instance;
-	}
+	// #convertToObject(json, object) {
+	// 	const instance = new object();
+	// 	for (const property of Object.getOwnPropertyNames(instance)) {
+	// 		instance[property] = json[property];
+	// 	}
+	// 	return instance;
+	// }
 
 	#paramize(data, params) {
 		const res = [];
 		for (const prop of Object.keys(data)) {
+			const subprop = prop.startsWith('_') ? prop.substring(1) : prop;
 			res.push({
 				name: prop,
-				type: params[prop],
+				type: params[subprop],
 				value: data[prop],
 			});
 		}
 		return res;
 	}
 
-	#processGet(tableName, functionName, object, parameters) {
+	#processGet(tableName, functionName, parameters) {
 		const splittedString = functionName.split('By');
 		if (splittedString.length === 2) {
 			const [tar, src] = splittedString;
@@ -104,10 +105,10 @@ class DBLoader {
 				sqlQuery += `WHERE ${srcColumns
 					.map((val) => val + '=@' + val)
 					.join(' AND ')}`;
-			return async (data) => {
+			return async (src) => {
 				const result = await this.#execute(
 					sqlQuery,
-					this.#paramize(data, parameters),
+					this.#paramize(src, parameters),
 				);
 
 				console.log(
@@ -126,15 +127,70 @@ class DBLoader {
 		}
 	}
 
-	#createFunction(tableName, functionName, object, parameters) {
-		if (typeof object !== 'function')
-			throw new Error('The given object is not a class!');
-		const instance = new object();
+	#processSet(tableName, functionName, parameters) {
+		const splittedString = functionName.split('By');
+		if (splittedString.length === 2) {
+			const [tar, src] = splittedString;
+			const tarColumns = tar
+				? tar.split('And').map((val) => val.toLowerCase())
+				: false;
+			const srcColumns = src
+				? src.split('And').map((val) => val.toLowerCase())
+				: false;
 
+			if (!tarColumns || !srcColumns) {
+				throw new Error(
+					'The format of the function name must be: `set...By...`. You can use `And` to split columns.',
+				);
+			}
+			const sqlTar = tarColumns.map((val) => val + '=@' + val).join(', ');
+			const sqlSrc = srcColumns
+				.map((val) => val + '=@_' + val)
+				.join(' AND ');
+
+			const sqlQuery = `UPDATE ${tableName} SET ${sqlTar} WHERE ${sqlSrc}`;
+
+			const source = (src) => {
+				let res = {};
+				for (const key of Object.keys(src)) {
+					res = { ...res, [`_${key}`]: src[key] };
+				}
+				return res;
+			};
+
+			return async (data, src) => {
+				// console.log(sqlQuery);
+				// console.log(
+				// 	this.#paramize({ ...data, ...source(src) }, parameters),
+				// );
+				const result = await this.#execute(
+					sqlQuery,
+					this.#paramize({ ...data, ...source(src) }, parameters),
+					false,
+				);
+
+				console.log(
+					`Set ${tarColumns.join(', ')} by ${srcColumns.join(
+						', ',
+					)} on ${tableName} affected: `,
+					result,
+				);
+
+				return result;
+			};
+		} else {
+			throw new Error(
+				'The format of the function name must be: `set...By...`. You can use `And` to split columns.',
+			);
+		}
+	}
+
+	#createFunction(tableName, functionName, parameters) {
 		if (functionName === 'all') {
 			return async () => {
-				const params = Object.getOwnPropertyNames(instance).join(', ');
+				const params = Object.keys(parameters).join(', ');
 				const sql = `SELECT ${params} FROM ${tableName}`;
+				console.log(sql);
 				const result = await this.#execute(sql);
 				// const aRes = [];
 
@@ -147,7 +203,7 @@ class DBLoader {
 				return result;
 			};
 		} else if (functionName === 'save') {
-			const paramWithoutID = Object.getOwnPropertyNames(instance).filter(
+			const paramWithoutID = Object.keys(parameters).filter(
 				(prop) => prop !== 'id',
 			);
 			const variables = paramWithoutID.map((val) => '@' + val);
@@ -172,6 +228,7 @@ class DBLoader {
 					false,
 				);
 				console.log(`Saved ${result} rows to ${tableName}`);
+				return result;
 			};
 		} else if (functionName === 'delete') {
 			return async (id) => {
@@ -184,6 +241,7 @@ class DBLoader {
 					false,
 				);
 				console.log(`Deleted ${result} rows from ${tableName}`);
+				return result;
 			};
 		} else if (functionName === 'getPool') {
 			return () => {
@@ -194,7 +252,13 @@ class DBLoader {
 			return this.#processGet(
 				tableName,
 				functionName.substr(3),
-				object,
+				parameters,
+			);
+		} else if (functionName.startsWith('set')) {
+			// console.log(functionName);
+			return this.#processSet(
+				tableName,
+				functionName.substr(3),
 				parameters,
 			);
 		}
@@ -206,7 +270,6 @@ class DBLoader {
 			const function_ = this.#createFunction(
 				tableName,
 				functionName,
-				instance.getObject(),
 				instance.getParams(),
 			);
 			prototype[functionName] = function_;
