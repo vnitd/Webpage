@@ -15,7 +15,7 @@ class TestDAO extends DAO {
 	setNameAndClazzByName() {}
 	setClazzByIdAndName() {}
 	// deleteById; // default = delete
-	deleteByNameAndClass() {}
+	deleteByNameAndClazz() {}
 }
 
 module.exports = TestDAO;

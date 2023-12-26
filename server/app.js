@@ -43,10 +43,15 @@ async function main() {
 		clazz: 'SE17B04',
 	});
 
-	await test.setNameAndClazzByName(
-		{ name: 'Trần Việt Đăng Quangg', clazz: 'SE17B04' },
-		{ name: 'Trần Việt Đăng Quang' },
-	);
+	// await test.setNameAndClazzByName(
+	// 	{ name: 'Trần Việt Đăng Quang', clazz: 'SE17B04' },
+	// 	{ name: 'Trần Việt Đăng Quangg' },
+	// );
+
+	await test.deleteByNameAndClazz({
+		name: 'Thân Trọng An',
+		clazz: 'SE17B05',
+	});
 
 	await db.disconnect();
 	// console.log(await test.all());

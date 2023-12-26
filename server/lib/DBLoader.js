@@ -6,9 +6,14 @@ const DAO = require('./interface/DAO');
 class DBLoader {
 	#path;
 	#pool;
+	#isDebugMode;
 	constructor(path, database) {
 		this.#path = path;
 		this.#pool = new sql.ConnectionPool(database);
+	}
+
+	setDebugMode(val) {
+		this.#isDebugMode = val;
 	}
 
 	async connect() {
@@ -110,13 +115,13 @@ class DBLoader {
 					sqlQuery,
 					this.#paramize(src, parameters),
 				);
-
-				console.log(
-					`Get ${sqlTar} by ${srcColumns.join(
-						', ',
-					)} on ${tableName}, result: `,
-					result,
-				);
+				if (this.#isDebugMode)
+					console.log(
+						`[QUERY] Get ${sqlTar} by ${srcColumns.join(
+							', ',
+						)} on ${tableName}, result: `,
+						result,
+					);
 
 				return result;
 			};
@@ -168,13 +173,14 @@ class DBLoader {
 					this.#paramize({ ...data, ...source(src) }, parameters),
 					false,
 				);
-
-				console.log(
-					`Set ${tarColumns.join(', ')} by ${srcColumns.join(
-						', ',
-					)} on ${tableName} affected: `,
-					result,
-				);
+				if (this.#isDebugMode)
+					console.log(
+						`[QUERY] Set ${tarColumns.join(
+							', ',
+						)} by ${srcColumns.join(
+							', ',
+						)} on ${tableName} affected ${result} row(s).`,
+					);
 
 				return result;
 			};
@@ -185,16 +191,44 @@ class DBLoader {
 		}
 	}
 
+	#processDelete(tableName, functionName, parameters) {
+		const srcColumns = functionName
+			? functionName.split('And').map((val) => val.toLowerCase())
+			: false;
+		const sqlQuery = `DELETE FROM ${tableName} WHERE ${srcColumns
+			.map((val) => val + '=@' + val)
+			.join(' AND ')}`;
+
+		return async (src) => {
+			const result = await this.#execute(
+				sqlQuery,
+				this.#paramize(src, parameters),
+				false,
+			);
+			if (this.#isDebugMode)
+				console.log(
+					`[QUERY] Deleted ${result} rows by ${srcColumns.join(
+						', ',
+					)}.`,
+				);
+
+			return result;
+		};
+	}
+
 	#createFunction(tableName, functionName, parameters) {
 		if (functionName === 'all') {
 			return async () => {
 				const params = Object.keys(parameters).join(', ');
 				const sql = `SELECT ${params} FROM ${tableName}`;
-				console.log(sql);
+				// console.log(sql);
 				const result = await this.#execute(sql);
 				// const aRes = [];
-
-				console.log(`Get all data on ${tableName}, result: `, result);
+				if (this.#isDebugMode)
+					console.log(
+						`[QUERY] Get all data on ${tableName}, result: `,
+						result,
+					);
 
 				// result.forEach((value) => {
 				// 	aRes.push(this.#convertToObject(value, object));
@@ -227,7 +261,8 @@ class DBLoader {
 					this.#paramize(data, parameters),
 					false,
 				);
-				console.log(`Saved ${result} rows to ${tableName}`);
+				if (this.#isDebugMode)
+					console.log(`[QUERY] Saved ${result} rows to ${tableName}`);
 				return result;
 			};
 		} else if (functionName === 'delete') {
@@ -240,7 +275,10 @@ class DBLoader {
 					this.#paramize({ id }, parameters),
 					false,
 				);
-				console.log(`Deleted ${result} rows from ${tableName}`);
+				if (this.#isDebugMode)
+					console.log(
+						`[QUERY] Deleted ${result} rows from ${tableName}`,
+					);
 				return result;
 			};
 		} else if (functionName === 'getPool') {
@@ -259,6 +297,12 @@ class DBLoader {
 			return this.#processSet(
 				tableName,
 				functionName.substr(3),
+				parameters,
+			);
+		} else if (functionName.startsWith('deleteBy')) {
+			return this.#processDelete(
+				tableName,
+				functionName.substr(8),
 				parameters,
 			);
 		}
