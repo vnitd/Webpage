@@ -27,7 +27,7 @@ const dbDir = path.join(__dirname, 'db');
 async function main() {
 	apiLoader.useJson();
 	apiLoader.useCors();
-	const db = apiLoader.useDatabase(dbDir, dbConfig, true);
+	const db = apiLoader.useDatabase(dbDir, dbConfig, true, true);
 
 	await db.connect();
 	await db.load();
@@ -35,31 +35,36 @@ async function main() {
 	apiLoader.loadAPIs(apiDir);
 
 	const test = new TestDAO();
-	await test.all();
+	// console.log(await test.all());
 
-	await test.getById({ id: 26 });
-	await test.getIdAndNameAndClazzByNameAndClazz({
-		name: 'Trần Việt Đăng Quang',
-		clazz: 'SE17B04',
-	});
+	// await test.getById({ id: 30 });
+	// await test.getIdAndNameAndClazzByNameAndClazz({
+	// 	name: 'Trần Việt Đăng Quang',
+	// 	clazz: 'SE17B04',
+	// });
 
-	await test.save({ name: 'Trần Việt Đăng Quang', clazz: 'SE17B06' });
+	// await test.save({ name: 'Mỹ Duyên', clazz: 'SE123456' });
 
 	// await test.setNameAndClazzByName(
-	// 	{ name: 'Trần Việt Đăng Quang', clazz: 'SE17B04' },
-	// 	{ name: 'Trần Việt Đăng Quangg' },
+	// 	{ name: 'Mỹ Duyên', clazz: 'SE17B04' },
+	// 	{ name: 'Trần Việt Đăng Quang' },
 	// );
 
 	await test.deleteByNameAndClazz({
-		name: 'Thân Trọng An',
-		clazz: 'SE17B05',
+		name: 'Mỹ Duyên',
+		clazz: 'SE17B04',
 	});
+
+	// await test.deleteByNameAndClazz({
+	// 	name: 'Thân Trọng An',
+	// 	clazz: 'SE17B05',
+	// });
 
 	await db.disconnect();
 	// console.log(await test.all());
 
 	// const port = 4000;
-	// // apiLoader.listen(port);
+	// apiLoader.listen(port);
 }
 
 main();

@@ -6,7 +6,7 @@ class TestAPI extends API {
 	}
 
 	onGet(req, res) {
-		res.json({ message: 'This is the message from server!' });
+		res.json({ message: 'This is the message from server!', status: 1 });
 	}
 }
 
